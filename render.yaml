@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: shopsmart-support-agent
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: OPENROUTER_MODEL
+        value: anthropic/claude-sonnet-4.6
+      - key: ENV
+        value: production
+      - key: APP_URL
+        fromService:
+          type: web
+          name: shopsmart-support-agent
+          property: host
+      - key: LANGFUSE_PUBLIC_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: LANGFUSE_SECRET_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: LANGFUSE_HOST
+        value: https://cloud.langfuse.com
+    healthCheckPath: /health
+    autoDeploy: true

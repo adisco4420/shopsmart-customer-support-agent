@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint & Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+
+      - name: Install dependencies (including dev)
+        run: uv sync --extra dev
+
+      - name: Lint with ruff
+        run: uv run ruff check src app.py
+
+      - name: Run unit & integration tests (no API key required)
+        env:
+          OPENROUTER_API_KEY: "sk-or-test-placeholder"
+        run: |
+          uv run pytest tests/ \
+            --cov=src --cov=app \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            -v
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage.xml
+        continue-on-error: true   # don't fail CI if Codecov is unreachable
