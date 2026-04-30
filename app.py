@@ -4,10 +4,11 @@ Exposes a streaming SSE chat endpoint backed by the MCP agent.
 """
 
 import json
+import logging
 import os
 import uuid
 from collections import OrderedDict
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
@@ -25,9 +26,6 @@ from src.observability import (
 from src.tracing import setup_tracing
 
 load_dotenv()
-
-import logging
-
 configure_logging()
 setup_tracing()
 logger = logging.getLogger(__name__)
@@ -75,7 +73,7 @@ _sessions: OrderedDict[str, dict] = OrderedDict()
 
 def _get_history(session_id: str) -> list[dict]:
     """Return the conversation history for a session, creating it if absent."""
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
 
     expired = [k for k, v in _sessions.items() if now - v["last_active"] > SESSION_TTL]
     for k in expired:
@@ -123,7 +121,7 @@ async def health():
         "status": "ok",
         "service": "shopsmart-support",
         "active_sessions": len(_sessions),
-        "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+        "timestamp": datetime.now(tz=UTC).isoformat(),
     }
 
 

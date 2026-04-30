@@ -46,7 +46,8 @@ _RETRYABLE_ERRORS = (
 )
 
 SYSTEM_PROMPT = """\
-You are Alex, a friendly and professional customer support agent for ShopSmart — a premium online retail store.
+You are Alex, a friendly and professional customer support agent for ShopSmart \
+— a premium online retail store.
 
 You have access to the following tools:
 - search_products: find items in the product catalog
@@ -271,9 +272,11 @@ async def run_agent(
                                                 tool_calls_raw[idx]["id"] = tc.id
                                             if tc.function:
                                                 if tc.function.name:
-                                                    tool_calls_raw[idx]["function"]["name"] += tc.function.name
+                                                    fn_dict = tool_calls_raw[idx]["function"]
+                                                    fn_dict["name"] += tc.function.name
                                                 if tc.function.arguments:
-                                                    tool_calls_raw[idx]["function"]["arguments"] += tc.function.arguments
+                                                    fn_dict = tool_calls_raw[idx]["function"]
+                                                    fn_dict["arguments"] += tc.function.arguments
 
                                 full_content = "".join(content_parts)
 
@@ -341,15 +344,22 @@ async def run_agent(
                                         tool_error: str | None = None
                                         try:
                                             async with asyncio.timeout(10):
-                                                tool_result = await session.call_tool(fn_name, fn_args)
+                                                tool_result = await session.call_tool(
+                                                    fn_name, fn_args
+                                                )
+                                            no_content = json.dumps(
+                                                {"error": "Tool returned no content"}
+                                            )
                                             result_text = (
                                                 tool_result.content[0].text
                                                 if tool_result.content
-                                                else json.dumps({"error": "Tool returned no content"})
+                                                else no_content
                                             )
                                         except TimeoutError:
                                             tool_success = False
-                                            tool_error = f"Tool '{fn_name}' timed out after 10 seconds"
+                                            tool_error = (
+                                                f"Tool '{fn_name}' timed out after 10 seconds"
+                                            )
                                             result_text = json.dumps({"error": tool_error})
                                             logger.error(
                                                 "Tool timeout: %s | request_id=%s",

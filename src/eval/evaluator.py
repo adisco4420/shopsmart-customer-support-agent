@@ -18,7 +18,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from openai import AsyncOpenAI
 
@@ -47,7 +47,8 @@ You are an impartial evaluator assessing an AI customer support agent.
 - accuracy: Is the information factually correct and complete?
 - helpfulness: Does the response fully address what the user needs?
 - tone: Is the response warm, professional, and empathetic?
-- tool_usage: Were the right tools called at the right time? (5 = perfect, 1 = wrong/missing tools, N/A if no tools needed → score 5)
+- tool_usage: Were the right tools called at the right time?
+  (5 = perfect, 1 = wrong/missing tools, N/A if no tools needed → score 5)
 - conciseness: Is the response appropriately brief without omitting key information?
 
 ## Instructions
@@ -56,7 +57,8 @@ You are an impartial evaluator assessing an AI customer support agent.
 - Return ONLY valid JSON with no markdown fences.
 
 Return JSON:
-{{"accuracy": <1-5>, "helpfulness": <1-5>, "tone": <1-5>, "tool_usage": <1-5>, "conciseness": <1-5>, "overall": <1-5>, "reasoning": "<one or two sentences>"}}
+{{"accuracy": <1-5>, "helpfulness": <1-5>, "tone": <1-5>, "tool_usage": <1-5>,
+ "conciseness": <1-5>, "overall": <1-5>, "reasoning": "<one or two sentences>"}}
 """
 
 
@@ -77,7 +79,7 @@ class EvalResult:
     agent_response: str
     tools_called: list[str]
     timestamp: str = field(
-        default_factory=lambda: datetime.now(tz=timezone.utc).isoformat()
+        default_factory=lambda: datetime.now(tz=UTC).isoformat()
     )
 
     def to_dict(self) -> dict:
@@ -103,7 +105,7 @@ class EvalSummary:
     avg_overall_score: float
     results: list[EvalResult]
     run_at: str = field(
-        default_factory=lambda: datetime.now(tz=timezone.utc).isoformat()
+        default_factory=lambda: datetime.now(tz=UTC).isoformat()
     )
 
     def print_report(self) -> None:

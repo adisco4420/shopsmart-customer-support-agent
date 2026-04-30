@@ -16,8 +16,7 @@ import threading
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 # ---------------------------------------------------------------------------
 # Request-ID propagation (works across async boundaries via contextvars)
@@ -50,7 +49,7 @@ class JsonFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         entry: dict = {
-            "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+            "timestamp": datetime.now(tz=UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -89,9 +88,9 @@ class LLMCallMetrics:
     tool_call_count: int = 0
     iterations: int = 0
     success: bool = True
-    error: Optional[str] = None
+    error: str | None = None
     timestamp: str = field(
-        default_factory=lambda: datetime.now(tz=timezone.utc).isoformat()
+        default_factory=lambda: datetime.now(tz=UTC).isoformat()
     )
 
 
@@ -101,9 +100,9 @@ class ToolCallMetrics:
     tool_name: str
     latency_ms: float
     success: bool
-    error: Optional[str] = None
+    error: str | None = None
     timestamp: str = field(
-        default_factory=lambda: datetime.now(tz=timezone.utc).isoformat()
+        default_factory=lambda: datetime.now(tz=UTC).isoformat()
     )
 
 

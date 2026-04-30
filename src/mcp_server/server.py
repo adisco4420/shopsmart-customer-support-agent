@@ -65,7 +65,9 @@ def get_order_status(order_id: str) -> str:
     """
     order = ORDERS.get(order_id.upper())
     if not order:
-        return json.dumps({"error": f"Order '{order_id}' not found. Check the order ID and try again."})
+        return json.dumps(
+            {"error": f"Order '{order_id}' not found. Check the order ID and try again."}
+        )
     return json.dumps(order)
 
 
@@ -113,7 +115,11 @@ def create_support_ticket(
         "priority": priority,
         "status": "open",
         "created_at": datetime.now(UTC).isoformat(),
-        "estimated_response": "within 24 hours" if priority == "low" else "within 4 hours" if priority == "medium" else "within 1 hour",
+        "estimated_response": (
+            "within 24 hours" if priority == "low"
+            else "within 4 hours" if priority == "medium"
+            else "within 1 hour"
+        ),
     }
     _tickets[ticket_id] = ticket
     logger.info("Created ticket %s for customer %s", ticket_id, customer_id)
@@ -175,8 +181,13 @@ def process_return_request(order_id: str, reason: str) -> str:
         "currency": "USD",
         "refund_method": "original payment method",
         "estimated_processing_days": "3–5 business days",
-        "prepaid_label_sent_to": CUSTOMERS.get(order["customer_id"], {}).get("email", "customer email on file"),
-        "instructions": "A prepaid return label has been emailed. Drop off at any carrier location within 14 days.",
+        "prepaid_label_sent_to": CUSTOMERS.get(order["customer_id"], {}).get(
+            "email", "customer email on file"
+        ),
+        "instructions": (
+            "A prepaid return label has been emailed. "
+            "Drop off at any carrier location within 14 days."
+        ),
     }
     logger.info("Return %s approved for order %s", return_id, order_id)
     return json.dumps(result)
