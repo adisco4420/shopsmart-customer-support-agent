@@ -1,15 +1,15 @@
 FROM python:3.12-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
-# Install uv for fast dependency installation
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+# Force uv to install to the system Python and compile bytecode for performance
+ENV UV_SYSTEM_PYTHON=1
+ENV UV_COMPILE_BYTECODE=1
 
-# Copy dependency files first (layer caching)
-COPY pyproject.toml requirements.txt ./
-
-# Install dependencies without dev extras
-RUN uv pip install --system -r requirements.txt
+# Install dependencies
+COPY pyproject.toml uv.lock ./
+RUN uv pip install --no-cache -r pyproject.toml
 
 # Copy application source
 COPY src/ ./src/
